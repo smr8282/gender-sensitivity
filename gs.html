@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>폭력예방 감수성 체크리스트</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #FAFAF8;
+    --surface: #FFFFFF;
+    --border: #E8E6E0;
+    --text: #1A1917;
+    --muted: #6B6860;
+    --hint: #A8A69F;
+    --accent: #D4891A;
+    --accent-bg: #FEF6EB;
+    --accent-text: #8A5200;
+    --yes-bg: #FEF6EB;
+    --yes-border: #D4891A;
+    --yes-text: #8A5200;
+    --no-bg: #EEF6ED;
+    --no-border: #4A9C44;
+    --no-text: #1A5E17;
+    --danger: #C0392B;
+  }
+
+  body {
+    font-family: 'Pretendard', 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 2rem 1rem 6rem;
+  }
+
+  .container { max-width: 720px; margin: 0 auto; }
+
+  .page-header { margin-bottom: 2rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border); }
+  .page-header h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.3px; margin-bottom: 6px; }
+  .page-header p { font-size: 14px; color: var(--muted); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+
+  thead th {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--hint);
+    padding: 10px 14px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+    letter-spacing: 0.3px;
+  }
+  thead th:nth-child(2) { text-align: left; }
+
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #FDFCFA; }
+
+  td { padding: 12px 14px; vertical-align: middle; }
+  td.num { font-size: 13px; color: var(--hint); text-align: center; width: 36px; font-variant-numeric: tabular-nums; }
+  td.q { font-size: 14px; color: var(--text); line-height: 1.6; }
+  td.ans { width: 70px; text-align: center; }
+
+  .radio-wrap input[type="radio"] { display: none; }
+  .radio-wrap label {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .12s;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .radio-wrap label:hover { background: var(--bg); border-color: var(--hint); }
+  .agree input:checked + label { background: var(--yes-bg); border-color: var(--yes-border); color: var(--yes-text); font-weight: 500; }
+  .disagree input:checked + label { background: var(--no-bg); border-color: var(--no-border); color: var(--no-text); font-weight: 500; }
+
+  .sticky-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--border);
+    padding: 12px 1rem;
+    z-index: 100;
+  }
+  .sticky-bar .inner { max-width: 720px; margin: 0 auto; display: flex; align-items: center; gap: 14px; }
+  .progress-wrap { flex: 1; }
+  .progress-label { font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+  .progress-track { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width .3s; }
+  .btn-submit {
+    padding: 10px 24px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .12s, transform .1s;
+  }
+  .btn-submit:hover { background: #B8740F; }
+  .btn-submit:active { transform: scale(0.98); }
+
+  .warn-msg { font-size: 12px; color: var(--danger); margin-top: 10px; text-align: center; min-height: 18px; }
+
+  .result-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.75rem;
+    margin-top: 1.5rem;
+    display: none;
+  }
+  .result-box.show { display: block; }
+
+  .result-top { display: flex; gap: 1.5rem; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .score-circle {
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    border: 2.5px solid currentColor;
+    flex-shrink: 0;
+  }
+  .score-num { font-size: 30px; font-weight: 600; line-height: 1; }
+  .score-denom { font-size: 12px; opacity: 0.7; }
+  .score-info { flex: 1; min-width: 180px; }
+  .score-grade { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+  .score-desc { font-size: 13px; color: var(--muted); line-height: 1.65; }
+
+  .radar-wrap { margin: 1.25rem 0; display: flex; justify-content: center; }
+
+  .domain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1.5rem; }
+  .domain-card { background: var(--bg); border-radius: 8px; padding: 10px 14px; }
+  .domain-name { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .domain-row { display: flex; align-items: center; gap: 8px; }
+  .domain-val { font-size: 15px; font-weight: 600; min-width: 44px; }
+  .bar-bg { flex: 1; height: 4px; background: var(--border); border-radius: 2px; }
+  .bar-fill { height: 4px; border-radius: 2px; }
+
+  .action-btns { display: flex; gap: 10px; }
+  .btn-action {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 11px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    transition: background .12s, border-color .12s;
+  }
+  .btn-action:hover { background: var(--bg); border-color: var(--hint); }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 200;
+    overflow-y: auto;
+    padding: 2rem 1rem;
+  }
+  .modal-overlay.show { display: block; }
+  .modal {
+    background: var(--surface);
+    border-radius: 14px;
+    max-width: 680px;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; background: var(--surface); z-index: 1;
+  }
+  .modal-header h2 { font-size: 17px; font-weight: 600; }
+  .btn-close {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted);
+    font-size: 20px;
+    line-height: 1;
+    transition: background .12s;
+  }
+  .btn-close:hover { background: var(--bg); }
+  .modal-body { padding: 1rem 1.5rem 1.5rem; }
+  .exp-item { padding: 14px 0; border-bottom: 1px solid var(--border); }
+  .exp-item:last-child { border-bottom: none; }
+  .exp-header { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+  .exp-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; min-width: 24px;
+    border-radius: 50%;
+    background: var(--accent-bg);
+    color: var(--accent-text);
+    font-size: 12px; font-weight: 600;
+  }
+  .exp-q { font-size: 13px; color: var(--muted); line-height: 1.55; }
+  .exp-answer {
+    display: inline-block;
+    font-size: 12px; font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+  }
+  .ans-disagree { background: var(--no-bg); color: var(--no-text); }
+  .ans-agree { background: var(--yes-bg); color: var(--yes-text); }
+  .exp-text { font-size: 13px; color: var(--text); line-height: 1.75; }
+
+  @media (max-width: 540px) {
+    td.q { font-size: 13px; }
+    td.ans { width: 56px; }
+    .radio-wrap label { padding: 4px 7px; font-size: 12px; }
+    .domain-grid { grid-template-columns: 1fr; }
+    .result-top { flex-direction: column; align-items: center; text-align: center; }
+    .action-btns { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="page-header">
+    <h1>폭력예방 감수성 체크리스트</h1>
+    <p>각 문항을 읽고 '동의' 또는 '비동의'를 선택하세요. 20개 문항 모두 응답 후 결과를 확인할 수 있습니다.</p>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>문항</th>
+        <th>동의</th>
+        <th>비동의</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+
+  <div class="warn-msg" id="warn"></div>
+  <div class="result-box" id="result"></div>
+</div>
+
+<div class="sticky-bar">
+  <div class="inner">
+    <div class="progress-wrap">
+      <div class="progress-label" id="prog-label">0 / 20 응답</div>
+      <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+    </div>
+    <button class="btn-submit" onclick="submit()">결과 보기</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>문항 해설</h2>
+      <button class="btn-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+const questions = [
+  {id:1, text:"가족 중 남편/아버지가 가장으로서 가정 생계를 부양하는 편이 맞다고 생각한다.", domain:"성평등"},
+  {id:2, text:"육아로 인해 휴직을 하게 된다면 부부 중 여성이 하는 것이 자연스럽다고 생각한다.", domain:"성평등"},
+  {id:3, text:'상대방을 칭찬하고자 "몸 좋다", "날씬하다"고 그 사람에게 이야기하는 것은 성희롱이 아니다.', domain:"성희롱"},
+  {id:4, text:"직장에서 누군가가 성적인 농담을 하거나 성차별적인 발언을 하면, 문제를 제기하기보다는 못 들은 척 하는 편이다.", domain:"성희롱"},
+  {id:5, text:"성희롱 문제를 방지하기 위해 남성에게 여성 동료들과 거리를 두라고 말하는 것은 성차별로 볼 수 없다.", domain:"성희롱"},
+  {id:6, text:"여성들은 상사나 동료의 마음을 세심하게 살피고, 직장 분위기를 부드럽게 만드는 역할을 남성들보다 잘할 수 있다.", domain:"성희롱"},
+  {id:7, text:"사람들이 성 구매를 하는 건 인간의 본성상 어쩔 수 없는 부분도 있다고 생각한다.", domain:"성매매"},
+  {id:8, text:"성매매 처벌이 강화되어 성매매를 할 수 없게 되면, 성폭력 범죄가 증가할 것이다.", domain:"성매매"},
+  {id:9, text:"성관계의 대가로 옷이나 물건을 제공한 것은 돈을 준 것이 아니므로 성매매가 성립하지 않는다.", domain:"성매매"},
+  {id:10, text:"성매매 피해자의 탈성매매는 온전히 개인의 선택과 의지에 달려 있다.", domain:"성매매"},
+  {id:11, text:"지나치게 노출이 심한 옷차림 등, 피해자에게도 어느 정도는 성폭력의 책임(원인 제공)이 있다.", domain:"성폭력"},
+  {id:12, text:"소리치거나 도망치는 등 적극적으로 성폭력에 저항하지 않았다면, 성폭력 피해자로 보기는 어렵다.", domain:"성폭력"},
+  {id:13, text:"특정 신체 부위나 성(性)과 관련된 사진이나 영상이 아니라면, 당사자의 동의가 없더라도 단톡방 등에서 공유해도 문제될 것 없다.", domain:"성폭력"},
+  {id:14, text:"탈의실이나 공중화장실에 초소형 불법 카메라가 숨겨져 있을 거라고 의심하는 것은 예민한 반응이다.", domain:"성폭력"},
+  {id:15, text:"성폭력 사건 신고자를 허위신고자로 의심하는 것은 2차 피해가 아니다.", domain:"성폭력"},
+  {id:16, text:"남들 앞에서 자신의 배우자(또는 연인)를 무시하거나 모욕하는 말을 하는 사람을 보면, 그럴 만한 이유가 있을 거라고 생각한다.", domain:"가정폭력"},
+  {id:17, text:"다른 부부나 커플 사이의 폭력을 목격해도 그것은 그들의 일이므로 말리거나 상관하지 않을 것이다.", domain:"가정폭력"},
+  {id:18, text:"배우자나 파트너(연인)에게 감정이 격해져서 벽이나 탁자를 내리치는 정도는 폭력이라고 할 수 없다.", domain:"가정폭력"},
+  {id:19, text:"가족이나 애인, 친구 등 친밀한 관계에서 상대의 외모나 옷차림, 귀가시간, 대인 관계 등을 자신의 생각대로 따르게 하는 행동은 상대를 위한 애정/관심 표현이다.", domain:"가정폭력"},
+  {id:20, text:"스스로는 내키지 않더라도, 배우자나 연인이 원한다면 성적인 요구를 수용하는 게 자연스럽다.", domain:"가정폭력"},
+];
+
+const explanations = [
+  {id:1,  exp:"우리 사회에 존재하는 성역할 고정관념, 가부장제 등으로 인해 경제적인 부분에 대해 남성에게 책임이 더 크다고 생각하기 쉽습니다. 성별에 따른 고정된 역할을 수행하는 것이 아닌, 모두가 함께 일하고, 함께 육아/가사에 참여하는 평등한 사회를 지향해야 합니다."},
+  {id:2,  exp:"한국 여성들이 30대에 경력이 단절되는 M자형 곡선은 자녀 양육을 비롯한 돌봄 노동을 여성의 일로 여기는 성역할 고정관념이 여전히 존재한다는 것을 보여줍니다. 돌봄을 누구나 전 생애주기에서 필요한 보편적 문제로 접근할 때 여성의 경력단절 해소와 일터에서의 성 평등 문화를 정착시킬 수 있습니다."},
+  {id:3,  exp:"행위자의 의도는 성희롱 여부 판단과는 무관합니다. 말하는 사람은 칭찬이라 하더라도 성차별이 될 위험도 있고 상대방은 불쾌감, 평가를 받는 느낌을 받을 수 있습니다. 상대방의 관심사, 문화생활, 취미생활 등 모두가 편하게 이야기할 수 있는 주제를 찾아 대화를 나누는 연습을 시작해보시기 바랍니다."},
+  {id:4,  exp:"내 주변에서 성희롱 또는 성차별로 문제가 될 수 있는 상황이 발생했을 때, 함께 웃고 즐거워하거나 침묵하는 행위는 가해자에게 동조하는 것으로 오해를 받을 수도 있습니다. 가해자를 즉시 지적하거나 제지하기 어렵다면 발언의 의도를 정확히 되물어보거나(예: 무슨 뜻인가요?), 화제를 전환하는 것도 즉각적 대응 방법 중 하나입니다."},
+  {id:5,  exp:"성희롱 예방을 명분으로 일터에서 여성을 배제하는 행위는 또 다른 차별로 이어질 수 있고, 문제의 근본적인 해결책이 될 수 없습니다. 보다 근본적인 해결을 위하여 인간존엄의 인권문제이자 보편적인 공동체의 문제로 접근할 필요가 있습니다."},
+  {id:6,  exp:"'여성은' 혹은 '남성은'이라는 말 뒤에 어떠한 생각이 떠오르시나요? '여성은', '남성은' 대신 '사람은'을 대입하였을 때 부자연스럽다면, 성차별적 편견일 수 있습니다. 성역할 고정관념과 편견에서 벗어나, 개개인의 차이와 다양성이 존중받는 사회가 더욱 자유롭고 평등한 사회입니다."},
+  {id:7,  exp:"성매매는 성욕과 같은 인간의 본능과 일대일의 관계에 있지 않습니다. 성매매는 성 상품화, 성산업 등 자본과 연관성이 있다는 것을 간과해서는 안 됩니다. 성매매 없는 평등한 세상을 위하여 우리 사회의 왜곡된 성문화 및 성매매에 내재한 폭력성, 범죄성, 반인권성에 대하여 사회구성원들의 성찰과 인식전환이 필요합니다."},
+  {id:8,  exp:"성매매의 합법/불법, 처벌 강화 여부 등은 성폭력 사건의 증가나 감소에 유의미한 영향을 미치지 않는 점을 여러 해외 사례 및 연구 등으로 확인할 수 있습니다. 인간의 성욕을 '참을 수 없는 것'이라고 생각하는 것은 잘못된 통념입니다."},
+  {id:9,  exp:"직접적인 금전이 아니더라도 숙식 제공 등 특정 이익을 주거나 주기로 약속하고 성행위가 있었다면 넓은 범위에서 성매매에 포함됩니다. 「성매매알선 등 행위의 처벌에 관한 법률」 제2조에 따르면, '성매매'란 불특정인을 상대로 금품이나 그 밖의 재산상의 이익을 수수하거나 수수하기로 약속하고 성교 행위 등을 하는 것을 말합니다."},
+  {id:10, exp:"성매매의 문제는 개인적 차원뿐 아니라 사회적, 구조적 차원에서 함께 접근해 근본적 해결 방안을 모색해야 합니다. 성매매 근절에 대한 국가와 우리 사회의 책임과 역할에 대해 한 번 더 생각해 봅시다."},
+  {id:11, exp:"성폭력이 실제로 노출이 많은 여름이나 늦은 밤에 특별히 더 많이 발생하지는 않습니다. 이런 통념은 성폭력의 책임을 피해자에게 돌리는 2차 피해를 주는 행위입니다."},
+  {id:12, exp:"사람마다 성격과 생활습관이 다르듯 성폭력 피해자들의 대응도 사람마다 다릅니다. 피해 상황에서 저항하는 사람도 있지만, 위협이나 가해자의 지위 때문에 얼어붙기도 하고, 자신을 보호하기 위해 가해자의 요구에 응하는 경우도 있습니다."},
+  {id:13, exp:"일상적인 영상 혹은 사진이라 하더라도 당사자에게 동의를 구하지 않고 제3자에게 공유할 경우, 초상권 침해에 해당할 수 있습니다. 승낙에 의하여 촬영된 사진이라도 이를 함부로 공표하는 행위, 일단 공표된 사진이라도 다른 목적에 사용하는 행위는 모두 초상권의 침해에 해당합니다."},
+  {id:14, exp:"최근 불법촬영으로 인한 범죄 피해가 다양해지고 있습니다. 초소형·위장형 카메라 등 불법 촬영 장비가 다양하고, 누구나 쉽게 구할 수 있어 문제가 더욱 심각합니다. 불법촬영 등 디지털 성범죄의 예방과 근절을 위하여 사회 구성원 전반적 인식전환과 관심이 필요합니다."},
+  {id:15, exp:"성폭력 처리 사건 중 피해자가 실제로 무고로 기소되는 비율은 매우 미미합니다. 오히려 성폭력 무고죄가 성폭력 가해자의 방어 수단으로 활용되어 피해자에게 2차 피해를 주는 행위를 더 경계해야 합니다."},
+  {id:16, exp:"친밀한 관계에서 상대적으로 우월한 위치에 있는 사람은 상대방에게 언어폭력을 행하는 경우가 많습니다. 친밀한 관계에서 거친 말이 때로는 용인된다고 생각할 수도 있지만, 폭언, 무시, 모욕 등은 언어폭력에 해당됩니다."},
+  {id:17, exp:"연인이나 부부 등 친밀한 관계에서 발생하는 데이트폭력, 가정폭력 등은 폐쇄적이고 지속적으로 발생할 가능성이 높습니다. 따라서 주변의 관심과 신고가 예방과 근절을 위하여 매우 중요합니다."},
+  {id:18, exp:"상대에게 직접 폭력을 행사하지 않아도 위협하거나 물건을 던지거나 부수는 것 역시 정서적인 학대에 해당하는 가정폭력 행위입니다."},
+  {id:19, exp:"부부나 연인 관계에서 상대방을 자기 소유물로 생각해 마음대로 조종, 통제하고 감시하는 행위도 가정폭력에 해당합니다."},
+  {id:20, exp:"부부나 연인 사이에도 성관계에 대한 거부는 명백히 존중되어야 합니다. 일방적이고 강압적인 방식이 아니라, 자유롭게 자신의 욕구를 표현하고 상대방은 그것을 왜곡 없이 받아들여 소통이 되는 상황에서 성관계가 이루어지는 것이 가장 바람직합니다."},
+];
+
+const domains    = ["성평등","성희롱","성매매","성폭력","가정폭력"];
+const domainMax  = {"성평등":2,"성희롱":4,"성매매":4,"성폭력":5,"가정폭력":5};
+const answers    = {};
+
+/* ── render table ── */
+function render() {
+  document.getElementById('tbody').innerHTML = questions.map(q => `
+    <tr id="row${q.id}">
+      <td class="num">${q.id}</td>
+      <td class="q">${q.text}</td>
+      <td class="ans"><div class="radio-wrap agree">
+        <input type="radio" name="q${q.id}" id="q${q.id}a" onchange="pick(${q.id},'agree')">
+        <label for="q${q.id}a">동의</label>
+      </div></td>
+      <td class="ans"><div class="radio-wrap disagree">
+        <input type="radio" name="q${q.id}" id="q${q.id}d" onchange="pick(${q.id},'disagree')">
+        <label for="q${q.id}d">비동의</label>
+      </div></td>
+    </tr>`).join('');
+}
+
+function pick(id, val) {
+  answers[id] = val;
+  const n = Object.keys(answers).length;
+  document.getElementById('prog-label').textContent = n + ' / 20 응답';
+  document.getElementById('prog-fill').style.width  = (n / 20 * 100) + '%';
+}
+
+/* ── grade ── */
+function getGrade(s) {
+  if (s >= 18) return {grade:'우수',      color:'#2E7D32', desc:'성평등에 대한 인식과 폭력예방에 대한 판단력을 잘 갖추고 있습니다. 현재의 태도를 잘 유지하면서, 주변 사람들도 젠더 기반폭력에 관심을 갖고 잘 대처할 수 있도록 도움을 주기 바랍니다.'};
+  if (s >= 15) return {grade:'양호',      color:'#558B2F', desc:'성평등이나 젠더기반폭력에 대해 잘 알고 있는 편입니다. 자신의 일상 속에 숨어 있는 폭력과 차별들을 잘 관찰하고, 그 해결을 위해 힘써 주기 바랍니다.'};
+  if (s >= 11) return {grade:'보통',      color:'#E8A020', desc:'일반적인 수준의 성평등 인식과 폭력예방 감수성을 지니고 있습니다. 잘 알려져 있지 않은 사례나 상황에서는 다른 판단을 내릴 여지도 있으므로, 꾸준한 관심과 공부가 필요합니다.'};
+  if (s >= 6)  return {grade:'약간 부족', color:'#E65100', desc:'성평등이나 젠더기반폭력에 대한 감수성이 부족한 편입니다. 때때로 성차별적인 행위나 폭력을 사소한 것으로 여기지 않았는지 돌아볼 필요가 있습니다. 성찰과 교육을 통해 스스로의 교양과 의식을 높여 나가기 바랍니다.'};
+  return         {grade:'많이 부족',  color:'#B71C1C', desc:'성평등 의식과 젠더기반폭력에 대한 인식이 매우 낮은 수준입니다. 신체적 폭력뿐만 아니라 언어적, 정서적, 경제적 학대행위도 한 사람의 인격과 인권을 해치는 명백한 폭력임을 잊지 말고, 다양한 교육을 찾아 적극적으로 참여하기 바랍니다.'};
+}
+
+/* ── radar: true regular pentagon ── */
+function buildRadar(domainScores, color) {
+  const W = 320, H = 310;
+  const cx = W / 2, cy = H / 2 + 8;
+  const R  = 108;   // outer ring radius
+
+  // 5 vertices of a regular pentagon, first pointing straight up
+  function vertex(i, r) {
+    const a = (i * 2 * Math.PI / 5) - Math.PI / 2;
+    return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+  }
+  function pts(r) {
+    return Array.from({length:5}, (_,i) => vertex(i, r))
+                .map(p => p.x.toFixed(2) + ',' + p.y.toFixed(2)).join(' ');
+  }
+
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">`;
+
+  // 5 grid rings
+  for (let ring = 1; ring <= 5; ring++) {
+    const r = (ring / 5) * R;
+    s += `<polygon points="${pts(r)}" fill="${ring===5?'#F5F4F000':'none'}" stroke="#DEDAD4" stroke-width="${ring===5?1:0.6}"/>`;
+  }
+  // axis lines
+  for (let i = 0; i < 5; i++) {
+    const v = vertex(i, R);
+    s += `<line x1="${cx}" y1="${cy}" x2="${v.x.toFixed(2)}" y2="${v.y.toFixed(2)}" stroke="#DEDAD4" stroke-width="0.6"/>`;
+  }
+
+  // score polygon — each axis uses its own max
+  const maxArr = domains.map(d => domainMax[d]);
+  const scoreVerts = domains.map((d, i) => {
+    const frac = maxArr[i] > 0 ? domainScores[d] / maxArr[i] : 0;
+    return vertex(i, frac * R);
+  });
+  const scorePts = scoreVerts.map(v => v.x.toFixed(2)+','+v.y.toFixed(2)).join(' ');
+  s += `<polygon points="${scorePts}" fill="${color}28" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>`;
+
+  // dots
+  scoreVerts.forEach(v => {
+    s += `<circle cx="${v.x.toFixed(2)}" cy="${v.y.toFixed(2)}" r="5" fill="${color}" stroke="white" stroke-width="1.5"/>`;
+  });
+
+  // labels
+  const labelR = R + 24;
+  domains.forEach((d, i) => {
+    const lv = vertex(i, labelR);
+    const anchor = lv.x < cx - 8 ? 'end' : lv.x > cx + 8 ? 'start' : 'middle';
+    s += `<text x="${lv.x.toFixed(2)}" y="${(lv.y + 4).toFixed(2)}" text-anchor="${anchor}" font-size="12" fill="#6B6860" font-family="sans-serif">${d}</text>`;
+  });
+
+  s += '</svg>';
+  return s;
+}
+
+/* ── submit ── */
+function submit() {
+  const n = Object.keys(answers).length;
+  if (n < 20) {
+    const first = questions.find(q => !answers[q.id]);
+    document.getElementById('warn').textContent = '아직 ' + (20 - n) + '개 문항에 응답하지 않았습니다.';
+    if (first) document.getElementById('row' + first.id).scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+  document.getElementById('warn').textContent = '';
+
+  const disagree = Object.values(answers).filter(v => v === 'disagree').length;
+  const {grade, color, desc} = getGrade(disagree);
+
+  const ds = {};
+  domains.forEach(d => { ds[d] = 0; });
+  questions.forEach(q => { if (answers[q.id] === 'disagree') ds[q.domain]++; });
+
+  const domainCards = domains.map(d => {
+    const pct = Math.round((ds[d] / domainMax[d]) * 100);
+    return `<div class="domain-card">
+      <div class="domain-name">${d}</div>
+      <div class="domain-row">
+        <div class="domain-val" style="color:${color}">${ds[d]}<span style="font-size:11px;color:#A8A69F"> / ${domainMax[d]}</span></div>
+        <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const iconReset = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 8a6 6 0 1 0 1.2-3.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="2,4 2,8 6,8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const iconInfo  = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 7v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="5" r="0.8" fill="currentColor"/></svg>`;
+
+  const el = document.getElementById('result');
+  el.innerHTML = `
+    <div class="result-top">
+      <div class="score-circle" style="color:${color}">
+        <div class="score-num">${disagree}</div>
+        <div class="score-denom">/ 20</div>
+      </div>
+      <div class="score-info">
+        <div class="score-grade" style="color:${color}">${grade}</div>
+        <div class="score-desc">${desc}</div>
+      </div>
+    </div>
+    <div class="radar-wrap">${buildRadar(ds, color)}</div>
+    <div class="domain-grid">${domainCards}</div>
+    <div class="action-btns">
+      <button class="btn-action" onclick="resetAll()">${iconReset} 다시 검사하기</button>
+      <button class="btn-action" onclick="openModal()">${iconInfo} 문항 해설 보기</button>
+    </div>`;
+  el.classList.add('show');
+  el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+/* ── modal ── */
+function openModal() {
+  document.getElementById('modal-body').innerHTML = explanations.map(e => {
+    const q   = questions.find(q => q.id === e.id);
+    const ans = answers[e.id];
+    const tag = ans === 'disagree'
+      ? '<span class="exp-answer ans-disagree">내 응답: 비동의 ✓</span>'
+      : '<span class="exp-answer ans-agree">내 응답: 동의</span>';
+    return `<div class="exp-item">
+      <div class="exp-header"><span class="exp-num">${e.id}</span><div class="exp-q">${q.text}</div></div>
+      ${tag}
+      <div class="exp-text">${e.exp}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('modal-overlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+/* ── reset ── */
+function resetAll() {
+  Object.keys(answers).forEach(k => delete answers[k]);
+  document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+  document.getElementById('prog-label').textContent = '0 / 20 응답';
+  document.getElementById('prog-fill').style.width  = '0%';
+  document.getElementById('result').classList.remove('show');
+  document.getElementById('warn').textContent = '';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+render();
+</script>
+</body>
+</html>
